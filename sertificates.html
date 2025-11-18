@@ -15,13 +15,13 @@
 
     <h1>Сертификаты</h1>
 
+    <!-- Только кнопка на главную -->
     <a class="btn" href="index.html">На главную</a>
 
     <div class="grid cols-2" id="list"></div>
 
 </div>
 
-<!-- Firebase init -->
 <script type="module" src="firebase-init.js"></script>
 
 <script type="module">
@@ -30,7 +30,7 @@ import { collection, getDocs, query, orderBy }
 
 const list = document.getElementById("list");
 
-async function loadPosts() {
+async function load() {
     list.innerHTML = "<p>Загрузка...</p>";
 
     const q = query(
@@ -82,7 +82,7 @@ async function loadPosts() {
     });
 }
 
-loadPosts();
+load();
 </script>
 
 </body>
