@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Сертификаты</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link rel="stylesheet" href="global.css"/>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Сертификаты</h1>
+
+    <a class="btn glow shimmer" href="addsertificates.html">Добавить сертификат</a>
+    <a class="btn" href="index.html">На главную</a>
+
+    <div class="grid cols-2" id="list"></div>
+
+</div>
+
+<!-- Firebase init -->
+<script type="module" src="firebase-init.js"></script>
+
+<script type="module">
+import { collection, getDocs, query, orderBy }
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+const list = document.getElementById("list");
+
+async function loadPosts() {
+    list.innerHTML = "<p>Загрузка...</p>";
+
+    const q = query(
+        collection(window.db, "certificates"),
+        orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+        list.innerHTML = "<p>Пока нет сертификатов.</p>";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    snap.forEach(doc => {
+        const item = doc.data();
+
+        const card = document.createElement("div");
+        card.className = "card reveal";
+
+        const head = document.createElement("div");
+        head.className = "card-header";
+        head.textContent = item.title;
+        card.appendChild(head);
+
+        const body = document.createElement("div");
+        body.className = "card-content";
+
+        if (item.image) {
+            const img = document.createElement("img");
+            img.src = item.image;
+            img.alt = item.title;
+            img.style.maxWidth = "100%";
+            img.style.borderRadius = "8px";
+            body.appendChild(img);
+        }
+
+        if (item.text) {
+            const p = document.createElement("p");
+            p.textContent = item.text;
+            p.style.marginTop = "10px";
+            body.appendChild(p);
+        }
+
+        card.appendChild(body);
+        list.appendChild(card);
+    });
+}
+
+loadPosts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Добавить сертификат</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link rel="stylesheet" href="global.css"/>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Добавить сертификат</h1>
+
+    <form class="card" id="postForm">
+        <div class="card-content">
+
+            <input id="title" placeholder="Заголовок" class="input" required />
+
+            <textarea id="body" placeholder="Описание (необязательно)" 
+                      rows="5" class="input"></textarea>
+
+            <input id="image" type="file" accept="image/*" class="input" />
+
+            <button class="btn-primary shimmer glow" type="submit">
+                Сохранить
+            </button>
+
+            <a class="btn-ghost" href="sertificates.html">К списку</a>
+        </div>
+    </form>
+</div>
+
+<!-- Firebase -->
+<script type="module" src="firebase-init.js"></script>
+
+<script type="module">
+
+import { collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+import { ref, uploadBytes, getDownloadURL }
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+
+const form = document.getElementById("postForm");
+
+form.addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const title = document.getElementById("title").value.trim();
+    const text = document.getElementById("body").value.trim();
+    const file = document.getElementById("image").files[0];
+
+    if (!title) {
+        alert("Введите заголовок");
+        return;
+    }
+
+    try {
+        let imageUrl = null;
+
+        // Загружаем картинку, если она есть
+        if (file) {
+            const fileRef = ref(window.storage, `certificates/${Date.now()}_${file.name}`);
+            await uploadBytes(fileRef, file);
+            imageUrl = await getDownloadURL(fileRef);
+        }
+
+        // Добавляем запись
+        await addDoc(collection(window.db, "certificates"), {
+            title,
+            text,
+            image: imageUrl,
+            createdAt: serverTimestamp()
+        });
+
+        alert("Сертификат добавлен!");
+        window.location.href = "sertificates.html";
+
+    } catch (err) {
+        console.error(err);
+        alert("Ошибка при сохранении.");
+    }
+});
+
+</script>
+
+</body>
+</html>

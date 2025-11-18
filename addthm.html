@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>Добавить TryHackMe публикацию</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link rel="stylesheet" href="global.css"/>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Добавить TryHackMe публикацию</h1>
+
+    <form class="card" id="postForm">
+        <div class="card-content">
+            <input id="title" placeholder="Заголовок" class="input" required />
+            <input id="image" type="file" accept="image/*" class="input" required />
+
+            <button class="btn-primary shimmer glow" type="submit">
+                Сохранить
+            </button>
+
+            <a class="btn-ghost" href="thm.html">К списку</a>
+        </div>
+    </form>
+</div>
+
+<!-- Firebase init -->
+<script type="module" src="firebase-init.js"></script>
+
+<script type="module">
+import { collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+import { ref, uploadBytes, getDownloadURL }
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-storage.js";
+
+const form = document.getElementById("postForm");
+const titleInput = document.getElementById("title");
+const imageInput = document.getElementById("image");
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const title = titleInput.value.trim();
+    const file = imageInput.files[0];
+
+    if (!title || !file) {
+        alert("Заполните все поля.");
+        return;
+    }
+
+    try {
+        // 1. Загрузка картинки в Storage
+        const fileRef = ref(window.storage, `thm-images/${Date.now()}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const imageUrl = await getDownloadURL(fileRef);
+
+        // 2. Создание записи в Firestore
+        await addDoc(collection(window.db, "tryhackme"), {
+            title: title,
+            image: imageUrl,
+            createdAt: serverTimestamp()
+        });
+
+        alert("Публикация добавлена!");
+        window.location.href = "thm.html";
+
+    } catch (err) {
+        console.error(err);
+        alert("Ошибка при сохранении информации.");
+    }
+});
+</script>
+
+</body>
+</html>

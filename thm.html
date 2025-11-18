@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8"/>
+    <title>TryHackMe — Achievements</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <link rel="stylesheet" href="global.css"/>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>TryHackMe Achievements</h1>
+
+    <a class="btn glow shimmer" href="addthm.html">Добавить публикацию</a>
+    <a class="btn" href="index.html">На главную</a>
+
+    <div class="grid cols-2" id="list"></div>
+</div>
+
+<!-- Firebase init -->
+<script type="module" src="firebase-init.js"></script>
+
+<script type="module">
+import { collection, getDocs, query, orderBy }
+    from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+const list = document.getElementById("list");
+
+async function loadPosts() {
+    list.innerHTML = "<p>Загрузка...</p>";
+
+    const q = query(
+        collection(window.db, "tryhackme"),
+        orderBy("createdAt", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+        list.innerHTML = "<p>Пока нет публикаций.</p>";
+        return;
+    }
+
+    list.innerHTML = "";
+
+    snapshot.forEach(doc => {
+        const item = doc.data();
+
+        const card = document.createElement("div");
+        card.className = "card reveal";
+
+        const head = document.createElement("div");
+        head.className = "card-header";
+        head.textContent = item.title;
+        card.appendChild(head);
+
+        const body = document.createElement("div");
+        body.className = "card-content";
+
+        const img = document.createElement("img");
+        img.src = item.image;
+        img.alt = item.title;
+        img.style.maxWidth = "100%";
+        img.style.borderRadius = "8px";
+
+        body.appendChild(img);
+        card.appendChild(body);
+
+        list.appendChild(card);
+    });
+}
+
+loadPosts();
+</script>
+
+</body>
+</html>
